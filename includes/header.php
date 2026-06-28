@@ -80,6 +80,7 @@ $role      = $user['role'] ?? null;
         <a href="<?= APP_URL ?>/logout.php">Çıkış</a>
       <?php elseif ($role === 'admin'): ?>
         <a href="<?= APP_URL ?>/admin/">Admin Panel</a>
+        <a href="<?= APP_URL ?>/profile.php">👤 <?= e($user['name']) ?></a>
         <a href="<?= APP_URL ?>/logout.php">Çıkış</a>
       <?php endif; ?>
     </nav>
@@ -124,6 +125,7 @@ $role      = $user['role'] ?? null;
     <a href="<?= APP_URL ?>/admin/orders.php">📦 Siparişler</a>
     <a href="<?= APP_URL ?>/admin/users.php">👥 Kullanıcılar</a>
     <a href="<?= APP_URL ?>/admin/settings.php">⚙️ Ayarlar</a>
+    <a href="<?= APP_URL ?>/profile.php">👤 Profil</a>
     <a href="<?= APP_URL ?>/logout.php">🚪 Çıkış Yap</a>
   <?php endif; ?>
 </div>
