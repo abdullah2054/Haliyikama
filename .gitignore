@@ -1,0 +1,20 @@
+# Bağımlılıklar
+/vendor/
+
+# Yüklenen dosyalar (deployment'ta ayrı tutulur)
+/assets/uploads/*
+!/assets/uploads/.gitkeep
+
+# Konfigürasyon (örnek dosyaları tutulur)
+/config/db.php
+
+# IDE ve OS dosyaları
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# PHP hata logları
+*.log
+/error_log

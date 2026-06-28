@@ -1,0 +1,17 @@
+{
+  "name": "haliyikama/pazaryeri",
+  "description": "Halı Yıkama Pazaryeri ve Sipariş Takip Sistemi",
+  "type": "project",
+  "require": {
+    "php": ">=8.0",
+    "phpmailer/phpmailer": "^6.9"
+  },
+  "config": {
+    "optimize-autoloader": true
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/"
+    }
+  }
+}
