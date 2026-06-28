@@ -346,15 +346,15 @@ INSERT IGNORE INTO `locations_districts` (`city_id`, `name`) VALUES
 
 -- ============================================================
 -- ADMIN KULLANICISI
--- password: admin123  (İlk girişte mutlaka değiştirin!)
+-- E-posta: admin@siteadi.com
+-- Şifre:   admin123   (İlk girişte mutlaka değiştirin!)
 -- ============================================================
 INSERT IGNORE INTO `users` (`name`, `email`, `phone`, `password`, `role`, `status`) VALUES
   ('Admin', 'admin@siteadi.com', '05001234567',
-   '$2y$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+   '$2y$12$MKMuqONobWmsjLTIqQVnruZFVMhBb3slub4pkmJ8M9Bn/ngZ5Zw6m',
    'admin', 'active');
 
 -- ============================================================
--- Admin şifresi: password (test için)
 -- GERÇEK ORTAMDA HEMEN DEĞİŞTİRİN!
 -- ============================================================
 
