@@ -5,7 +5,7 @@
  */
 
 // Hata gösterimini production'da kapatın (geliştirme için true yapın)
-define('APP_DEBUG', true);
+define('APP_DEBUG', false);
 
 if (APP_DEBUG) {
     ini_set('display_errors', 1);

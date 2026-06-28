@@ -3,9 +3,10 @@
 
 Options -Indexes
 
-# PHP hata logunu aktif et (production'da kapatın)
-# php_flag display_errors Off
-# php_flag log_errors On
+# PHP hata ayarları (production)
+php_flag display_errors Off
+php_flag log_errors On
+php_value error_log /home/u_USER/logs/php_errors.log
 
 # Yükleme güvenliği - PHP dosyası çalıştırılmasını engelle
 <FilesMatch "\.php$">
@@ -21,10 +22,10 @@ Options -Indexes
   Deny from all
 </FilesMatch>
 
-# HTTPS yönlendirme (canlıda aktif edin)
-# RewriteEngine On
-# RewriteCond %{HTTPS} off
-# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# HTTPS yönlendirme
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
 # Doğrudan /api/ erişimine sadece JSON izni
 <Directory "api">
