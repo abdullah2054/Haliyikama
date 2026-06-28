@@ -6,11 +6,10 @@
  * cPanel'den veritabanı adı ve kullanıcıyı alın.
  * ---------------------------------------------------------------
  */
-
 define('DB_HOST',    'localhost');       // Genellikle localhost
-define('DB_NAME',    'hali_yikama');     // Veritabanı adınız
-define('DB_USER',    'root');            // DB kullanıcı adınız
-define('DB_PASS',    '');               // DB şifreniz (boş bırakın veya girin)
+define('DB_NAME',    'u929469444_asm_demo');     // Veritabanı adınız
+define('DB_USER',    'u929469444_asm_demo');            // DB kullanıcı adınız
+define('DB_PASS',    'Yildirim.88');               // DB şifreniz (boş bırakın veya girin)
 define('DB_CHARSET', 'utf8mb4');
 
 function getDB(): PDO
