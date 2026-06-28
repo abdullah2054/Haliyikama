@@ -10,12 +10,13 @@ require_once dirname(__DIR__) . '/includes/csrf.php';
 
 requireAdmin();
 $user = currentUser();
+$pdo  = getDB();
 
-// Varsayılan şifre uyarısı
-$defaultPwHash = '$2y$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi';
-$usingDefault  = password_verify('password', $defaultPwHash);
-
-$pdo = getDB();
+// Varsayılan şifre uyarısı - DB'deki gerçek hash ile karşılaştır
+$adminRow     = $pdo->prepare('SELECT password FROM users WHERE id = ? LIMIT 1');
+$adminRow->execute([$user['id']]);
+$adminHash    = $adminRow->fetchColumn();
+$usingDefault = $adminHash && password_verify('password', $adminHash);
 
 // İstatistikler
 $userCount     = $pdo->query('SELECT COUNT(*) FROM users WHERE role = "customer"')->fetchColumn();
