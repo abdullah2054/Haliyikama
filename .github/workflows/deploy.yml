@@ -37,6 +37,18 @@ jobs:
             **/.git*
             **/.git*/**
             .github/**
-            database/**
             assets/uploads/**
             *.md
+
+      - name: Run database migration
+        run: |
+          sleep 5
+          response=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://bilgiyarismasioyunlari.com/migrate.php?key=${{ secrets.MIGRATE_KEY }}")
+          if [ "$response" = "200" ]; then
+            echo "Migration successful"
+            curl -s "https://bilgiyarismasioyunlari.com/migrate.php?key=${{ secrets.MIGRATE_KEY }}"
+          else
+            echo "Migration returned HTTP $response"
+            curl -s "https://bilgiyarismasioyunlari.com/migrate.php?key=${{ secrets.MIGRATE_KEY }}"
+          fi
