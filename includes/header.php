@@ -74,6 +74,10 @@ $role      = $user['role'] ?? null;
         <a href="<?= APP_URL ?>/company-wallet.php">Bakiye</a>
         <a href="<?= APP_URL ?>/profile.php">👤 Profil</a>
         <a href="<?= APP_URL ?>/logout.php">Çıkış</a>
+      <?php elseif ($role === 'consultant'): ?>
+        <a href="<?= APP_URL ?>/consultant-panel.php">Panel</a>
+        <a href="<?= APP_URL ?>/profile.php">👤 <?= e($user['name']) ?></a>
+        <a href="<?= APP_URL ?>/logout.php">Çıkış</a>
       <?php elseif ($role === 'admin'): ?>
         <a href="<?= APP_URL ?>/admin/">Admin Panel</a>
         <a href="<?= APP_URL ?>/logout.php">Çıkış</a>
@@ -108,6 +112,10 @@ $role      = $user['role'] ?? null;
     <a href="<?= APP_URL ?>/company-orders.php">📋 Siparişler</a>
     <a href="<?= APP_URL ?>/company-wallet.php">💰 Bakiye</a>
     <a href="<?= APP_URL ?>/company-settings.php">⚙️ Firma Ayarları</a>
+    <a href="<?= APP_URL ?>/profile.php">👤 Profil</a>
+    <a href="<?= APP_URL ?>/logout.php">🚪 Çıkış Yap</a>
+  <?php elseif ($role === 'consultant'): ?>
+    <a href="<?= APP_URL ?>/consultant-panel.php">🎯 Panel</a>
     <a href="<?= APP_URL ?>/profile.php">👤 Profil</a>
     <a href="<?= APP_URL ?>/logout.php">🚪 Çıkış Yap</a>
   <?php elseif ($role === 'admin'): ?>

@@ -11,9 +11,16 @@ require_once __DIR__ . '/config/db.php';
 try {
     $pdo = getDB();
 
-    // Tablolar zaten kuruluysa atla
+    // Tablolar zaten kuruluysa sadece şema güncellemelerini çalıştır
     if ($pdo->query("SHOW TABLES LIKE 'users'")->fetchColumn()) {
-        echo json_encode(['status' => 'already_installed']);
+        $updates = [];
+        // consultant rolü ENUM'a ekle (yoksa)
+        $col = $pdo->query("SHOW COLUMNS FROM users LIKE 'role'")->fetch();
+        if ($col && strpos($col['Type'], 'consultant') === false) {
+            $pdo->exec("ALTER TABLE users MODIFY COLUMN role ENUM('customer','company','consultant','admin') NOT NULL DEFAULT 'customer'");
+            $updates[] = 'consultant role eklendi';
+        }
+        echo json_encode(['status' => 'already_installed', 'updates' => $updates]);
         exit;
     }
 

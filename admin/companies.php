@@ -13,6 +13,58 @@ require_once dirname(__DIR__) . '/includes/wallet-functions.php';
 requireAdmin();
 $pdo = getDB();
 
+// POST: Yeni firma ekle
+if (isPost() && isset($_POST['add_company'])) {
+    verifyCsrf();
+    $f = [
+        'company_name'    => trim($_POST['company_name']    ?? ''),
+        'authorized_name' => trim($_POST['authorized_name'] ?? ''),
+        'phone'           => trim($_POST['phone']           ?? ''),
+        'email'           => trim($_POST['email']           ?? ''),
+        'city_id'         => (int)($_POST['city_id']        ?? 0),
+        'address'         => trim($_POST['address']         ?? ''),
+        'user_name'       => trim($_POST['user_name']       ?? ''),
+        'user_email'      => trim($_POST['user_email']      ?? ''),
+        'password'        => $_POST['password']             ?? '',
+    ];
+    $err = [];
+    if (mb_strlen($f['company_name']) < 2)                      $err[] = 'Firma adı zorunlu.';
+    if (!filter_var($f['email'], FILTER_VALIDATE_EMAIL))        $err[] = 'Geçerli firma e-postası girin.';
+    if (!filter_var($f['user_email'], FILTER_VALIDATE_EMAIL))   $err[] = 'Geçerli giriş e-postası girin.';
+    if (mb_strlen($f['user_name']) < 2)                         $err[] = 'Yetkili adı zorunlu.';
+    if (strlen($f['password']) < 6)                             $err[] = 'Şifre en az 6 karakter.';
+
+    if (empty($err)) {
+        $ex = $pdo->prepare('SELECT id FROM users WHERE email = ?');
+        $ex->execute([$f['user_email']]);
+        if ($ex->fetchColumn()) $err[] = 'Bu giriş e-postası zaten kayıtlı.';
+    }
+
+    if (empty($err)) {
+        $pdo->beginTransaction();
+        try {
+            $hash = password_hash($f['password'], PASSWORD_BCRYPT);
+            $pdo->prepare('INSERT INTO users (name,email,phone,password,role,status) VALUES (?,?,?,?,"company","active")')
+                ->execute([$f['user_name'], $f['user_email'], $f['phone'], $hash]);
+            $userId = (int)$pdo->lastInsertId();
+            $pdo->prepare(
+                'INSERT INTO companies (user_id,company_name,authorized_name,phone,email,city_id,address,status)
+                 VALUES (?,?,?,?,?,?,?,"active")'
+            )->execute([$userId,$f['company_name'],$f['authorized_name'],$f['phone'],$f['email'],$f['city_id'],$f['address']]);
+            $pdo->commit();
+            $_SESSION['flash'][] = ['type'=>'success','text'=>$f['company_name'].' eklendi ve aktif edildi.'];
+            header('Location: ' . APP_URL . '/admin/companies.php');
+            exit;
+        } catch (\Throwable $e) {
+            $pdo->rollBack();
+            $err[] = 'Hata: ' . $e->getMessage();
+        }
+    }
+    $_SESSION['flash'][] = ['type'=>'danger','text'=>implode(' ', $err)];
+    header('Location: ' . APP_URL . '/admin/companies.php?add=1');
+    exit;
+}
+
 // POST: Firma durumu güncelle
 if (isPost() && isset($_POST['update_status'])) {
     verifyCsrf();
@@ -125,9 +177,14 @@ include dirname(__DIR__) . '/includes/header.php';
 ?>
 
 <div class="page-header">
-  <div class="container">
-    <h1>🏢 Firma Yönetimi</h1>
-    <p>Tüm firmalar ve başvurular</p>
+  <div class="container" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+    <div>
+      <h1>🏢 Firma Yönetimi</h1>
+      <p>Tüm firmalar ve başvurular</p>
+    </div>
+    <?php if (!$detailCompany): ?>
+      <a href="?add=1" class="btn btn-success">+ Firma Ekle</a>
+    <?php endif; ?>
   </div>
 </div>
 
@@ -258,6 +315,68 @@ include dirname(__DIR__) . '/includes/header.php';
       </div>
 
     <?php else: ?>
+
+      <?php if (isset($_GET['add'])): ?>
+      <?php $cities = $pdo->query('SELECT id,name FROM locations_cities ORDER BY name')->fetchAll(); ?>
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-header"><h2 class="card-title">➕ Yeni Firma Ekle</h2></div>
+        <div class="card-body">
+          <form method="POST" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;">
+            <?= csrfInput() ?>
+            <div class="form-group">
+              <label class="form-label">Firma Adı *</label>
+              <input type="text" name="company_name" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Yetkili Adı *</label>
+              <input type="text" name="authorized_name" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Firma Telefonu</label>
+              <input type="text" name="phone" class="form-control">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Firma E-posta *</label>
+              <input type="email" name="email" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">İl</label>
+              <select name="city_id" class="form-control">
+                <option value="">Seçin</option>
+                <?php foreach ($cities as $ci): ?>
+                  <option value="<?= $ci['id'] ?>"><?= e($ci['name']) ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Adres</label>
+              <input type="text" name="address" class="form-control">
+            </div>
+            <fieldset style="grid-column:1/-1;border:1px solid #e2e8f0;border-radius:8px;padding:12px 16px;">
+              <legend style="font-size:13px;font-weight:600;padding:0 8px;">Giriş Bilgileri</legend>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;">
+                <div class="form-group">
+                  <label class="form-label">Ad Soyad *</label>
+                  <input type="text" name="user_name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Giriş E-postası *</label>
+                  <input type="email" name="user_email" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Şifre *</label>
+                  <input type="password" name="password" class="form-control" minlength="6" required>
+                </div>
+              </div>
+            </fieldset>
+            <div style="grid-column:1/-1;display:flex;gap:8px;">
+              <button type="submit" name="add_company" class="btn btn-success">💾 Firmayı Kaydet</button>
+              <a href="?" class="btn btn-outline-primary">İptal</a>
+            </div>
+          </form>
+        </div>
+      </div>
+      <?php endif; ?>
 
       <!-- Liste -->
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;">

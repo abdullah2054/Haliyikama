@@ -11,6 +11,42 @@ require_once dirname(__DIR__) . '/includes/csrf.php';
 requireAdmin();
 $pdo = getDB();
 
+// POST: Yeni kullanıcı ekle
+if (isPost() && isset($_POST['add_user'])) {
+    verifyCsrf();
+    $name     = trim($_POST['name']     ?? '');
+    $email    = trim($_POST['email']    ?? '');
+    $phone    = trim($_POST['phone']    ?? '');
+    $role     = $_POST['role']          ?? 'customer';
+    $password = $_POST['password']      ?? '';
+
+    $err = [];
+    if (mb_strlen($name) < 2)                             $err[] = 'Ad soyad zorunlu.';
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL))       $err[] = 'Geçerli e-posta girin.';
+    if (!array_key_exists($role, USER_ROLES))             $err[] = 'Geçersiz rol.';
+    if (strlen($password) < 6)                            $err[] = 'Şifre en az 6 karakter.';
+
+    if (empty($err)) {
+        $exists = $pdo->prepare('SELECT id FROM users WHERE email = ?');
+        $exists->execute([$email]);
+        if ($exists->fetchColumn()) {
+            $err[] = 'Bu e-posta zaten kayıtlı.';
+        }
+    }
+
+    if (empty($err)) {
+        $hash = password_hash($password, PASSWORD_BCRYPT);
+        $pdo->prepare('INSERT INTO users (name, email, phone, password, role, status) VALUES (?, ?, ?, ?, ?, "active")')
+            ->execute([$name, $email, $phone, $hash, $role]);
+        $_SESSION['flash'][] = ['type' => 'success', 'text' => $name . ' eklendi.'];
+        header('Location: ' . APP_URL . '/admin/users.php');
+        exit;
+    }
+    $_SESSION['flash'][] = ['type' => 'danger', 'text' => implode(' ', $err)];
+    header('Location: ' . APP_URL . '/admin/users.php?add=1');
+    exit;
+}
+
 // POST: Kullanıcı durumu ve rolü güncelle
 if (isPost() && isset($_POST['update_user'])) {
     verifyCsrf();
@@ -67,14 +103,56 @@ include dirname(__DIR__) . '/includes/header.php';
 ?>
 
 <div class="page-header">
-  <div class="container">
-    <h1>👥 Kullanıcı Yönetimi</h1>
-    <p>Toplam: <?= number_format($total) ?> kullanıcı</p>
+  <div class="container" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+    <div>
+      <h1>👥 Kullanıcı Yönetimi</h1>
+      <p>Toplam: <?= number_format($total) ?> kullanıcı</p>
+    </div>
+    <a href="?add=1" class="btn btn-success">+ Kullanıcı Ekle</a>
   </div>
 </div>
 
 <div class="page-content">
   <div class="container">
+    <?php if (isset($_GET['add'])): ?>
+    <div class="card" style="margin-bottom:24px;">
+      <div class="card-header"><h2 class="card-title">➕ Yeni Kullanıcı Ekle</h2></div>
+      <div class="card-body">
+        <form method="POST" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;">
+          <?= csrfInput() ?>
+          <div class="form-group">
+            <label class="form-label">Ad Soyad *</label>
+            <input type="text" name="name" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">E-posta *</label>
+            <input type="email" name="email" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Telefon</label>
+            <input type="text" name="phone" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Rol *</label>
+            <select name="role" class="form-control">
+              <?php foreach (USER_ROLES as $rk => $rv): ?>
+                <option value="<?= $rk ?>"><?= $rv ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Şifre *</label>
+            <input type="password" name="password" class="form-control" minlength="6" required>
+          </div>
+          <div class="form-group" style="display:flex;align-items:flex-end;gap:8px;">
+            <button type="submit" name="add_user" class="btn btn-success">💾 Kaydet</button>
+            <a href="?" class="btn btn-outline-primary">İptal</a>
+          </div>
+        </form>
+      </div>
+    </div>
+    <?php endif; ?>
+
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;align-items:center;">
       <form method="GET" style="display:flex;gap:8px;flex:1;min-width:200px;">
         <input type="text" name="q" class="form-control" placeholder="İsim veya e-posta ara..."

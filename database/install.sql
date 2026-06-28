@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `email`      VARCHAR(200) NOT NULL UNIQUE,
   `phone`      VARCHAR(20) DEFAULT NULL,
   `password`   VARCHAR(255) NOT NULL,
-  `role`       ENUM('customer','company','admin') NOT NULL DEFAULT 'customer',
+  `role`       ENUM('customer','company','consultant','admin') NOT NULL DEFAULT 'customer',
   `status`     ENUM('active','inactive','banned') NOT NULL DEFAULT 'active',
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

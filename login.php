@@ -11,9 +11,10 @@ require_once __DIR__ . '/includes/csrf.php';
 if (isLoggedIn()) {
     $u = currentUser();
     header('Location: ' . match($u['role']) {
-        'admin'   => APP_URL . '/admin/',
-        'company' => APP_URL . '/company-panel.php',
-        default   => APP_URL . '/my-orders.php',
+        'admin'      => APP_URL . '/admin/',
+        'company'    => APP_URL . '/company-panel.php',
+        'consultant' => APP_URL . '/consultant-panel.php',
+        default      => APP_URL . '/my-orders.php',
     });
     exit;
 }
@@ -52,9 +53,10 @@ if (isPost()) {
 
             if (!$redirect) {
                 $redirect = match($user['role']) {
-                    'admin'   => APP_URL . '/admin/',
-                    'company' => APP_URL . '/company-panel.php',
-                    default   => APP_URL . '/my-orders.php',
+                    'admin'      => APP_URL . '/admin/',
+                    'company'    => APP_URL . '/company-panel.php',
+                    'consultant' => APP_URL . '/consultant-panel.php',
+                    default      => APP_URL . '/my-orders.php',
                 };
             }
 
