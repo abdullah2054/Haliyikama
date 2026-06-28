@@ -36,11 +36,9 @@ jobs:
             *.lock
 
       - name: Run database migration
-        env:
-          MIGRATE_KEY: ${{ secrets.MIGRATE_KEY }}
         run: |
-          sleep 8
-          curl -sf \
-            -H "X-Migrate-Key: ${{ secrets.MIGRATE_KEY }}" \
-            "https://bilgiyarismasioyunlari.com/migrate.php?key=${{ secrets.MIGRATE_KEY }}" \
-            | tee /dev/stderr | grep -q '"status"'
+          sleep 10
+          curl -sf "https://bilgiyarismasioyunlari.com/migrate.php"
+          echo ""
+          echo "Migration response:"
+          curl -s "https://bilgiyarismasioyunlari.com/migrate.php"
