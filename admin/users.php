@@ -11,13 +11,24 @@ require_once dirname(__DIR__) . '/includes/csrf.php';
 requireAdmin();
 $pdo = getDB();
 
-// POST: Kullanıcı durumu güncelle
+// POST: Kullanıcı durumu ve rolü güncelle
 if (isPost() && isset($_POST['update_user'])) {
     verifyCsrf();
     $uid    = (int)$_POST['user_id'];
     $status = $_POST['status'] ?? '';
-    if (in_array($status, ['active', 'inactive', 'banned'])) {
-        $pdo->prepare('UPDATE users SET status=? WHERE id=?')->execute([$status, $uid]);
+    $role   = $_POST['role']   ?? '';
+
+    if ($uid === (int)$_SESSION['user_id']) {
+        $_SESSION['flash'][] = ['type' => 'danger', 'text' => 'Kendi hesabını değiştiremezsin.'];
+        header('Location: ' . APP_URL . '/admin/users.php');
+        exit;
+    }
+
+    $validStatus = in_array($status, ['active', 'inactive', 'banned']);
+    $validRole   = array_key_exists($role, USER_ROLES);
+
+    if ($validStatus && $validRole) {
+        $pdo->prepare('UPDATE users SET status=?, role=? WHERE id=?')->execute([$status, $role, $uid]);
         $_SESSION['flash'][] = ['type' => 'success', 'text' => 'Kullanıcı güncellendi.'];
     }
     header('Location: ' . APP_URL . '/admin/users.php');
@@ -105,13 +116,18 @@ include dirname(__DIR__) . '/includes/header.php';
                     <td><?= formatDateTR($u['created_at']) ?></td>
                     <td>
                       <?php if ($u['id'] !== (int)$_SESSION['user_id']): ?>
-                        <form method="POST" style="display:inline;">
+                        <form method="POST" style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">
                           <?= csrfInput() ?>
                           <input type="hidden" name="user_id" value="<?= (int)$u['id'] ?>">
-                          <select name="status" class="form-control" style="display:inline;width:auto;font-size:12px;padding:4px 8px;">
-                            <option value="active" <?= $u['status']==='active' ? 'selected' : '' ?>>Aktif</option>
+                          <select name="role" class="form-control" style="width:auto;font-size:12px;padding:4px 8px;">
+                            <?php foreach (USER_ROLES as $rk => $rv): ?>
+                              <option value="<?= $rk ?>" <?= $u['role']===$rk ? 'selected' : '' ?>><?= $rv ?></option>
+                            <?php endforeach; ?>
+                          </select>
+                          <select name="status" class="form-control" style="width:auto;font-size:12px;padding:4px 8px;">
+                            <option value="active"   <?= $u['status']==='active'   ? 'selected' : '' ?>>Aktif</option>
                             <option value="inactive" <?= $u['status']==='inactive' ? 'selected' : '' ?>>Pasif</option>
-                            <option value="banned" <?= $u['status']==='banned' ? 'selected' : '' ?>>Yasaklı</option>
+                            <option value="banned"   <?= $u['status']==='banned'   ? 'selected' : '' ?>>Yasaklı</option>
                           </select>
                           <button type="submit" name="update_user" class="btn btn-sm btn-primary">💾</button>
                         </form>
