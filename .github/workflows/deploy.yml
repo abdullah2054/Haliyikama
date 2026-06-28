@@ -9,21 +9,15 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    name: FTP Deploy
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
-
-      - name: Install Composer dependencies
+      - name: Install PHP dependencies
         run: composer install --no-dev --optimize-autoloader --no-interaction
 
-      - name: Deploy via FTP
+      - name: Upload files via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -39,16 +33,14 @@ jobs:
             .github/**
             assets/uploads/**
             *.md
+            *.lock
 
       - name: Run database migration
+        env:
+          MIGRATE_KEY: ${{ secrets.MIGRATE_KEY }}
         run: |
-          sleep 5
-          response=$(curl -s -o /dev/null -w "%{http_code}" \
-            "https://bilgiyarismasioyunlari.com/migrate.php?key=${{ secrets.MIGRATE_KEY }}")
-          if [ "$response" = "200" ]; then
-            echo "Migration successful"
-            curl -s "https://bilgiyarismasioyunlari.com/migrate.php?key=${{ secrets.MIGRATE_KEY }}"
-          else
-            echo "Migration returned HTTP $response"
-            curl -s "https://bilgiyarismasioyunlari.com/migrate.php?key=${{ secrets.MIGRATE_KEY }}"
-          fi
+          sleep 8
+          curl -sf \
+            -H "X-Migrate-Key: ${{ secrets.MIGRATE_KEY }}" \
+            "https://bilgiyarismasioyunlari.com/migrate.php?key=${{ secrets.MIGRATE_KEY }}" \
+            | tee /dev/stderr | grep -q '"status"'
