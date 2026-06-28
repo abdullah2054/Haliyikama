@@ -19,7 +19,6 @@ if (isLoggedIn()) {
     exit;
 }
 
-$pdo    = getDB();
 $errors = [];
 $values = [
     'company_name'    => '',
@@ -36,7 +35,14 @@ $values = [
     'user_email'      => '',
 ];
 
-$cities = $pdo->query('SELECT id, name FROM locations_cities ORDER BY name')->fetchAll();
+try {
+    $pdo    = getDB();
+    $cities = $pdo->query('SELECT id, name FROM locations_cities ORDER BY name')->fetchAll();
+} catch (\Throwable $e) {
+    $pdo    = null;
+    $cities = [];
+    $errors[] = 'Veritabanı bağlantısı kurulamadı. Lütfen daha sonra tekrar deneyin.';
+}
 
 if (isPost()) {
     verifyCsrf();
@@ -57,6 +63,10 @@ if (isPost()) {
     if (mb_strlen($values['user_name']) < 2)        $errors[] = 'Ad soyad zorunludur.';
     if (strlen($password) < 6)                      $errors[] = 'Şifre en az 6 karakter olmalı.';
     if ($password !== $password2)                   $errors[] = 'Şifreler eşleşmiyor.';
+
+    if (empty($errors) && !$pdo) {
+        $errors[] = 'Veritabanı bağlantısı yok. Lütfen daha sonra deneyin.';
+    }
 
     if (empty($errors)) {
         // E-posta benzersizlik
@@ -120,7 +130,7 @@ if (isPost()) {
 }
 
 $districts = [];
-if ($values['city_id']) {
+if ($values['city_id'] && $pdo) {
     $stmt = $pdo->prepare('SELECT id, name FROM locations_districts WHERE city_id = ? ORDER BY name');
     $stmt->execute([$values['city_id']]);
     $districts = $stmt->fetchAll();

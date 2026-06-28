@@ -222,7 +222,7 @@ function paginate(int $total, int $perPage, int $currentPage): array
 /**
  * JSON yanıt gönderir ve çıkar
  */
-function jsonResponse(array $data, int $code = 200): never
+function jsonResponse(array $data, int $code = 200): void
 {
     http_response_code($code);
     header('Content-Type: application/json; charset=utf-8');
