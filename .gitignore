@@ -5,8 +5,8 @@
 /assets/uploads/*
 !/assets/uploads/.gitkeep
 
-# Konfigürasyon (örnek dosyaları tutulur)
-/config/db.php
+# Konfigürasyon - db.php git'te template olarak tutuluyor
+# /config/db.php
 
 # IDE ve OS dosyaları
 .DS_Store

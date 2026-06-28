@@ -3,10 +3,13 @@
  * Ortak üst bölüm - Tüm sayfalarda kullanılır
  */
 
-// $pageTitle değişkeni dahil eden sayfada tanımlanmalı
-$pageTitle = $pageTitle ?? getSetting('site_name', 'Halı Yıkama Pazaryeri');
-$siteName  = getSetting('site_name', 'Halı Yıkama Pazaryeri');
-$user      = currentUser();
+// DB gerektiren getSetting() yerine güvenli fallback
+$siteName  = 'Halı Yıkama Pazaryeri';
+try { $siteName = getSetting('site_name', 'Halı Yıkama Pazaryeri'); } catch (\Throwable $e) {}
+
+$pageTitle = $pageTitle ?? $siteName;
+$user      = null;
+try { $user = currentUser(); } catch (\Throwable $e) {}
 $role      = $user['role'] ?? null;
 ?>
 <!DOCTYPE html>
@@ -23,13 +26,6 @@ $role      = $user['role'] ?? null;
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
   <title><?= e($pageTitle) ?> | <?= e($siteName) ?></title>
-
-  <!-- Preconnect -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-  <!-- Favicon -->
-  <link rel="icon" href="<?= APP_URL ?>/assets/img/favicon.ico" type="image/x-icon">
 
   <!-- Ana CSS -->
   <link rel="stylesheet" href="<?= APP_URL ?>/assets/css/style.css">

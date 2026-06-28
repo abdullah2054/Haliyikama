@@ -4,8 +4,8 @@
  * Hostinger ve diğer shared hosting ortamları için uyarlanmıştır.
  */
 
-// Hata gösterimini production'da kapatın
-define('APP_DEBUG', false);
+// Hata gösterimini production'da kapatın (geliştirme için true yapın)
+define('APP_DEBUG', true);
 
 if (APP_DEBUG) {
     ini_set('display_errors', 1);
@@ -22,14 +22,29 @@ date_default_timezone_set('Europe/Istanbul');
 if (session_status() === PHP_SESSION_NONE) {
     ini_set('session.cookie_httponly', 1);
     ini_set('session.use_only_cookies', 1);
-    ini_set('session.cookie_samesite', 'Lax'); // WebView uyumluluğu için Lax
-    // HTTPS zorunluysa 1 yapın; local test için 0
-    ini_set('session.cookie_secure', isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 1 : 0);
+    ini_set('session.cookie_samesite', 'Lax');
+    $isHttps = (
+        (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ||
+        (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+    );
+    ini_set('session.cookie_secure', $isHttps ? 1 : 0);
     session_start();
 }
 
-// Uygulama URL'si (sondaki slash olmadan)
-define('APP_URL', 'https://www.siteadi.com');
+// ---------------------------------------------------------------
+// APP_URL: Otomatik tespit eder — değiştirmenize gerek yok.
+// Zorunlu olarak elle ayarlamak isterseniz aşağıdaki satırı
+// açıp kendi domain'inizi yazın:
+// define('APP_URL', 'https://www.siteadi.com');
+// ---------------------------------------------------------------
+if (!defined('APP_URL')) {
+    $scheme = (
+        (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ||
+        (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+    ) ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    define('APP_URL', rtrim($scheme . '://' . $host, '/'));
+}
 
 // Uygulama kök dizini
 define('APP_ROOT', dirname(__DIR__));
@@ -61,7 +76,7 @@ define('ORDER_STATUSES', [
     'cancelled'  => 'İptal Edildi',
 ]);
 
-// Sipariş durum badge renkleri (Bootstrap / CSS sınıfları)
+// Sipariş durum badge renkleri
 define('ORDER_STATUS_COLORS', [
     'pending'    => 'warning',
     'accepted'   => 'info',

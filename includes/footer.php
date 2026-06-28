@@ -2,7 +2,8 @@
 /**
  * Ortak alt bölüm
  */
-$siteName = getSetting('site_name', 'Halı Yıkama Pazaryeri');
+$siteName = 'Halı Yıkama Pazaryeri';
+try { $siteName = getSetting('site_name', 'Halı Yıkama Pazaryeri'); } catch (\Throwable $e) {}
 ?>
 </main><!-- /main -->
 
@@ -32,9 +33,11 @@ $siteName = getSetting('site_name', 'Halı Yıkama Pazaryeri');
       </div>
       <div class="footer-col">
         <h4>İletişim</h4>
-        <a href="mailto:<?= e(getSetting('site_email', 'info@siteadi.com')) ?>">
-          ✉️ <?= e(getSetting('site_email', 'info@siteadi.com')) ?>
-        </a>
+        <?php
+        $siteEmail = 'info@siteadi.com';
+        try { $siteEmail = getSetting('site_email', 'info@siteadi.com'); } catch (\Throwable $e) {}
+        ?>
+        <a href="mailto:<?= e($siteEmail) ?>">✉️ <?= e($siteEmail) ?></a>
       </div>
     </div>
     <div class="footer-bottom">
