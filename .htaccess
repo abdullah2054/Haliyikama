@@ -3,10 +3,6 @@
 
 Options -Indexes
 
-# PHP hata ayarları (production)
-php_flag display_errors Off
-php_flag log_errors On
-php_value error_log /home/u_USER/logs/php_errors.log
 
 # Yükleme güvenliği - PHP dosyası çalıştırılmasını engelle
 <FilesMatch "\.php$">
