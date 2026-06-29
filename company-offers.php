@@ -231,8 +231,12 @@ include __DIR__ . '/includes/header.php';
                 </div>
               </details>
             <?php elseif ($r['my_offer']): ?>
-              <div class="alert alert-success" style="margin-top:8px;">
-                ✅ Bu talep için teklifiniz gönderildi. Müşterinin kararını bekliyorsunuz.
+              <div style="margin-top:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                <div class="alert alert-success" style="margin:0;flex:1;">
+                  ✅ Bu talep için teklifiniz gönderildi. Müşterinin kararını bekliyorsunuz.
+                </div>
+                <a href="<?= APP_URL ?>/chat.php?order_id=<?= (int)$r['id'] ?>&company_id=<?= $companyId ?>"
+                   class="btn btn-sm btn-primary">💬 Müşteri ile Mesajlaş</a>
               </div>
             <?php endif; ?>
           </div>

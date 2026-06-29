@@ -208,6 +208,12 @@ include __DIR__ . '/includes/header.php';
         </div>
       </div>
 
+      <!-- Mesajlaşma -->
+      <div style="margin-bottom:16px;">
+        <a href="<?= APP_URL ?>/chat.php?order_id=<?= (int)$detailOrder['id'] ?>&company_id=<?= $companyId ?>"
+           class="btn btn-primary btn-full">💬 Müşteri ile Mesajlaş</a>
+      </div>
+
       <!-- Durum Güncelleme Paneli -->
       <?php
       $nextStatuses = [

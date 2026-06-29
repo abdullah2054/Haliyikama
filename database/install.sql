@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `email`      VARCHAR(200) NOT NULL UNIQUE,
   `phone`      VARCHAR(20) DEFAULT NULL,
   `password`   VARCHAR(255) NOT NULL,
-  `role`       ENUM('customer','company','admin') NOT NULL DEFAULT 'customer',
+  `role`       ENUM('customer','company','consultant','admin') NOT NULL DEFAULT 'customer',
   `status`     ENUM('active','inactive','banned') NOT NULL DEFAULT 'active',
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -283,6 +283,25 @@ CREATE TABLE IF NOT EXISTS `complaints` (
   PRIMARY KEY (`id`),
   FOREIGN KEY (`user_id`)  REFERENCES `users`(`id`) ON DELETE CASCADE,
   FOREIGN KEY (`order_id`) REFERENCES `orders`(`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================
+-- 14. MESAJLAR (Firma-Müşteri İletişimi)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `messages` (
+  `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `order_id`   INT UNSIGNED NOT NULL,
+  `company_id` INT UNSIGNED NOT NULL,
+  `sender_id`  INT UNSIGNED NOT NULL,
+  `message`    TEXT NOT NULL,
+  `is_read`    TINYINT(1) NOT NULL DEFAULT 0,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX `idx_order_company` (`order_id`, `company_id`),
+  INDEX `idx_unread` (`is_read`),
+  FOREIGN KEY (`order_id`)   REFERENCES `orders`(`id`)    ON DELETE CASCADE,
+  FOREIGN KEY (`company_id`) REFERENCES `companies`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`sender_id`)  REFERENCES `users`(`id`)     ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================================

@@ -246,7 +246,13 @@ include __DIR__ . '/includes/header.php';
     <!-- Firma Bilgisi -->
     <?php if ($order['company_name']): ?>
     <div class="card" style="margin-bottom:20px;">
-      <div class="card-header"><h2 class="card-title">🏢 Firma Bilgisi</h2></div>
+      <div class="card-header">
+        <h2 class="card-title">🏢 Firma Bilgisi</h2>
+        <?php if ($user['role'] === 'customer' && $order['company_id']): ?>
+          <a href="<?= APP_URL ?>/chat.php?order_id=<?= $orderId ?>&company_id=<?= (int)$order['company_id'] ?>"
+             class="btn btn-sm btn-primary">💬 Mesajlaş</a>
+        <?php endif; ?>
+      </div>
       <div class="card-body" style="font-size:14px;">
         <strong><?= e($order['company_name']) ?></strong><br>
         📞 <?= e($order['company_phone']) ?><br>
@@ -282,7 +288,7 @@ include __DIR__ . '/includes/header.php';
                   <p style="font-size:13px;color:var(--text-muted);margin-top:6px;"><?= e($of['message']) ?></p>
                 <?php endif; ?>
               </div>
-              <div>
+              <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
                 <?php if ($of['status'] === 'pending'): ?>
                   <form method="POST" data-once>
                     <?= csrfInput() ?>
@@ -295,6 +301,8 @@ include __DIR__ . '/includes/header.php';
                 <?php elseif ($of['status'] === 'accepted'): ?>
                   <span class="badge badge-success">Kabul Edildi</span>
                 <?php endif; ?>
+                <a href="<?= APP_URL ?>/chat.php?order_id=<?= $orderId ?>&company_id=<?= (int)$of['company_id'] ?>"
+                   class="btn btn-sm btn-outline-primary">💬 Mesajlaş</a>
               </div>
             </div>
           </div>

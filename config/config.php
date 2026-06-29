@@ -91,7 +91,8 @@ define('ORDER_STATUS_COLORS', [
 
 // Rol etiketleri
 define('USER_ROLES', [
-    'customer' => 'Müşteri',
-    'company'  => 'Firma',
-    'admin'    => 'Admin',
+    'customer'   => 'Müşteri',
+    'company'    => 'Firma',
+    'consultant' => 'Danışman',
+    'admin'      => 'Admin',
 ]);

@@ -11,6 +11,25 @@ $pageTitle = $pageTitle ?? $siteName;
 $user      = null;
 try { $user = currentUser(); } catch (\Throwable $e) {}
 $role      = $user['role'] ?? null;
+
+$unreadMessages = 0;
+try {
+    if ($user && in_array($role, ['customer', 'company'])) {
+        $pdo = getDB();
+        if ($role === 'customer') {
+            $s = $pdo->prepare('SELECT COUNT(*) FROM messages m JOIN orders o ON o.id = m.order_id WHERE o.customer_id = ? AND m.sender_id != ? AND m.is_read = 0');
+            $s->execute([$user['id'], $user['id']]);
+            $unreadMessages = (int)$s->fetchColumn();
+        } else {
+            $comp = getCompanyByUserId($user['id']);
+            if ($comp) {
+                $s = $pdo->prepare('SELECT COUNT(*) FROM messages WHERE company_id = ? AND sender_id != ? AND is_read = 0');
+                $s->execute([(int)$comp['id'], $user['id']]);
+                $unreadMessages = (int)$s->fetchColumn();
+            }
+        }
+    }
+} catch (\Throwable $e) {}
 ?>
 <!DOCTYPE html>
 <html lang="tr">
@@ -63,19 +82,24 @@ $role      = $user['role'] ?? null;
       <?php elseif ($role === 'customer'): ?>
         <a href="<?= APP_URL ?>/index.php">Ana Sayfa</a>
         <a href="<?= APP_URL ?>/create-order.php">Talep Oluştur</a>
-        <a href="<?= APP_URL ?>/my-orders.php">Siparişlerim</a>
+        <a href="<?= APP_URL ?>/my-orders.php">Siparişlerim<?php if ($unreadMessages > 0): ?> <span style="background:#e53e3e;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;"><?= $unreadMessages ?></span><?php endif; ?></a>
         <a href="<?= APP_URL ?>/track.php">Takip Et</a>
         <a href="<?= APP_URL ?>/profile.php">👤 <?= e($user['name']) ?></a>
         <a href="<?= APP_URL ?>/logout.php">Çıkış</a>
       <?php elseif ($role === 'company'): ?>
         <a href="<?= APP_URL ?>/company-panel.php">Panel</a>
         <a href="<?= APP_URL ?>/company-offers.php">Talepler</a>
-        <a href="<?= APP_URL ?>/company-orders.php">Siparişler</a>
+        <a href="<?= APP_URL ?>/company-orders.php">Siparişler<?php if ($unreadMessages > 0): ?> <span style="background:#e53e3e;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;"><?= $unreadMessages ?></span><?php endif; ?></a>
         <a href="<?= APP_URL ?>/company-wallet.php">Bakiye</a>
         <a href="<?= APP_URL ?>/profile.php">👤 Profil</a>
         <a href="<?= APP_URL ?>/logout.php">Çıkış</a>
+      <?php elseif ($role === 'consultant'): ?>
+        <a href="<?= APP_URL ?>/consultant-panel.php">Panel</a>
+        <a href="<?= APP_URL ?>/profile.php">👤 <?= e($user['name']) ?></a>
+        <a href="<?= APP_URL ?>/logout.php">Çıkış</a>
       <?php elseif ($role === 'admin'): ?>
         <a href="<?= APP_URL ?>/admin/">Admin Panel</a>
+        <a href="<?= APP_URL ?>/profile.php">👤 <?= e($user['name']) ?></a>
         <a href="<?= APP_URL ?>/logout.php">Çıkış</a>
       <?php endif; ?>
     </nav>
@@ -98,16 +122,20 @@ $role      = $user['role'] ?? null;
   <?php elseif ($role === 'customer'): ?>
     <a href="<?= APP_URL ?>/index.php">🏠 Ana Sayfa</a>
     <a href="<?= APP_URL ?>/create-order.php">➕ Talep Oluştur</a>
-    <a href="<?= APP_URL ?>/my-orders.php">📋 Siparişlerim</a>
+    <a href="<?= APP_URL ?>/my-orders.php">📋 Siparişlerim<?php if ($unreadMessages > 0): ?> <span style="background:#e53e3e;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;"><?= $unreadMessages ?></span><?php endif; ?></a>
     <a href="<?= APP_URL ?>/track.php">📦 Sipariş Takip</a>
     <a href="<?= APP_URL ?>/profile.php">👤 Profil</a>
     <a href="<?= APP_URL ?>/logout.php">🚪 Çıkış Yap</a>
   <?php elseif ($role === 'company'): ?>
     <a href="<?= APP_URL ?>/company-panel.php">📊 Panel</a>
     <a href="<?= APP_URL ?>/company-offers.php">📥 Talepler</a>
-    <a href="<?= APP_URL ?>/company-orders.php">📋 Siparişler</a>
+    <a href="<?= APP_URL ?>/company-orders.php">📋 Siparişler<?php if ($unreadMessages > 0): ?> <span style="background:#e53e3e;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;"><?= $unreadMessages ?></span><?php endif; ?></a>
     <a href="<?= APP_URL ?>/company-wallet.php">💰 Bakiye</a>
     <a href="<?= APP_URL ?>/company-settings.php">⚙️ Firma Ayarları</a>
+    <a href="<?= APP_URL ?>/profile.php">👤 Profil</a>
+    <a href="<?= APP_URL ?>/logout.php">🚪 Çıkış Yap</a>
+  <?php elseif ($role === 'consultant'): ?>
+    <a href="<?= APP_URL ?>/consultant-panel.php">🎯 Panel</a>
     <a href="<?= APP_URL ?>/profile.php">👤 Profil</a>
     <a href="<?= APP_URL ?>/logout.php">🚪 Çıkış Yap</a>
   <?php elseif ($role === 'admin'): ?>
@@ -116,6 +144,7 @@ $role      = $user['role'] ?? null;
     <a href="<?= APP_URL ?>/admin/orders.php">📦 Siparişler</a>
     <a href="<?= APP_URL ?>/admin/users.php">👥 Kullanıcılar</a>
     <a href="<?= APP_URL ?>/admin/settings.php">⚙️ Ayarlar</a>
+    <a href="<?= APP_URL ?>/profile.php">👤 Profil</a>
     <a href="<?= APP_URL ?>/logout.php">🚪 Çıkış Yap</a>
   <?php endif; ?>
 </div>
